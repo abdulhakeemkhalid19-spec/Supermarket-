@@ -25,14 +25,16 @@ export default function AdminPage() {
     const { data: products } = await supabase
       .from('products')
       .select('id')
-    if (orders) {
+if (orders) {
       setStats({
         totalOrders: orders.length,
         pendingOrders: orders.filter((o) => o.status === 'pending').length,
         totalProducts: products?.length || 0,
-        totalRevenue: orders.reduce((sum, o) => sum + o.total_amount, 0),
+        totalRevenue: orders
+          .filter((o) => o.status !== 'cancelled')
+          .reduce((sum, o) => sum + o.total_amount, 0),
       })
-    }
+}
     setLoading(false)
   }
 
