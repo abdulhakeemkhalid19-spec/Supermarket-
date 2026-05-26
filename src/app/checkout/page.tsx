@@ -29,20 +29,12 @@ export default function CheckoutPage() {
   }
 
   const handleSubmit = async () => {
-    if (
-      !form.customer_name ||
-      !form.customer_email ||
-      !form.customer_phone ||
-      !form.delivery_address
-    ) {
+    if (!form.customer_name || !form.customer_email || !form.customer_phone || !form.delivery_address) {
       alert('Please fill in all required fields!')
       return
     }
-
     setLoading(true)
-
     try {
-      // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
@@ -59,7 +51,6 @@ export default function CheckoutPage() {
 
       if (orderError) throw orderError
 
-      // Create order items
       const orderItems = cart.map((item) => ({
         order_id: order.id,
         product_id: item.id,
@@ -74,7 +65,6 @@ export default function CheckoutPage() {
 
       if (itemsError) throw itemsError
 
-      // Update stock
       for (const item of cart) {
         try {
           await supabase.rpc('decrement_stock', {
@@ -82,50 +72,60 @@ export default function CheckoutPage() {
             quantity: item.quantity,
           })
         } catch {
-          // Stock update is optional, won't block order
+          // Stock update optional
         }
       }
 
-      // Clear cart
       localStorage.setItem('cart', '[]')
-
-      // Redirect to success page
       router.push(`/orders/success?id=${order.id}`)
-
     } catch (error) {
       alert('Something went wrong. Please try again!')
       console.error(error)
     }
-
     setLoading(false)
   }
 
+  const inputStyle = {
+    background: 'rgba(255,255,255,0.05)',
+    border: '1px solid rgba(124,58,237,0.3)',
+    color: 'white',
+    borderRadius: '12px',
+    padding: '12px 16px',
+    width: '100%',
+    outline: 'none',
+    fontSize: '14px',
+  }
+
   return (
-    <div className="min-h-screen bg-purple-50">
+    <div className="min-h-screen" style={{background: '#0a0a0a'}}>
 
       {/* Navbar */}
-      <nav className="bg-purple-800 text-white sticky top-0 z-50 shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold">🛒 FreshMart</Link>
-          <Link href="/cart" className="text-sm hover:underline">← Back to Cart</Link>
+      <nav style={{background: 'linear-gradient(180deg, #0d0d1a 0%, rgba(13,13,26,0.95) 100%)', borderBottom: '1px solid rgba(124,58,237,0.3)'}} className="sticky top-0 z-50 shadow-2xl">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="shrink-0">
+            <h1 className="text-2xl font-black tracking-wider" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+              ✦ FRESHMART
+            </h1>
+          </Link>
+          <Link href="/cart" className="text-sm text-purple-300 hover:text-white transition">
+            ← Back to Cart
+          </Link>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-purple-800 mb-6">
-          💳 Checkout
-        </h1>
+      <div className="max-w-4xl mx-auto px-4 py-10">
+        <h1 className="text-3xl font-black text-white mb-8">Checkout</h1>
 
         <div className="flex flex-col md:flex-row gap-6">
 
-          {/* Delivery Form */}
+          {/* Form */}
           <div className="flex-1 card p-6">
-            <h2 className="text-lg font-bold text-purple-800 mb-4">
+            <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
               📦 Delivery Information
-            </h2>
+            </p>
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-semibold text-gray-600 block mb-1">
+                <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">
                   Full Name *
                 </label>
                 <input
@@ -134,11 +134,11 @@ export default function CheckoutPage() {
                   value={form.customer_name}
                   onChange={handleChange}
                   placeholder="Enter your full name"
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-600 block mb-1">
+                <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">
                   Email Address *
                 </label>
                 <input
@@ -147,11 +147,11 @@ export default function CheckoutPage() {
                   value={form.customer_email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-600 block mb-1">
+                <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">
                   Phone Number *
                 </label>
                 <input
@@ -160,11 +160,11 @@ export default function CheckoutPage() {
                   value={form.customer_phone}
                   onChange={handleChange}
                   placeholder="Enter your phone number"
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-600 block mb-1">
+                <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">
                   Delivery Address *
                 </label>
                 <textarea
@@ -173,11 +173,11 @@ export default function CheckoutPage() {
                   onChange={handleChange}
                   placeholder="Enter your full delivery address"
                   rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
               <div>
-                <label className="text-sm font-semibold text-gray-600 block mb-1">
+                <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">
                   Order Notes (optional)
                 </label>
                 <textarea
@@ -186,60 +186,57 @@ export default function CheckoutPage() {
                   onChange={handleChange}
                   placeholder="Any special instructions?"
                   rows={2}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 outline-none focus:border-purple-500"
+                  style={inputStyle}
                 />
               </div>
             </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="md:w-80">
-            <div className="card p-6 mb-4">
-              <h2 className="text-lg font-bold text-purple-800 mb-4">
+          {/* Summary */}
+          <div className="md:w-80 space-y-4">
+            <div className="card p-6">
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
                 🧾 Order Summary
-              </h2>
-              <div className="space-y-3 mb-4">
+              </p>
+              <div className="space-y-3 mb-5">
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-gray-600">
+                    <span className="text-gray-400 line-clamp-1 flex-1 mr-2">
                       {item.name} x{item.quantity}
                     </span>
-                    <span className="font-semibold">
+                    <span className="font-bold text-white shrink-0">
                       ₦{(item.price * item.quantity).toLocaleString()}
                     </span>
                   </div>
                 ))}
               </div>
-              <div className="border-t pt-3 space-y-2">
-                <div className="flex justify-between text-gray-600 text-sm">
-                  <span>Subtotal</span>
-                  <span>₦{total.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between text-gray-600 text-sm">
+              <div style={{borderTop: '1px solid rgba(124,58,237,0.2)'}} className="pt-4 space-y-2">
+                <div className="flex justify-between text-sm text-gray-400">
                   <span>Delivery</span>
-                  <span className="text-green-600">Free</span>
+                  <span className="text-green-400 font-semibold">Free</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg text-purple-800">
-                  <span>Total</span>
-                  <span>₦{total.toLocaleString()}</span>
+                <div className="flex justify-between font-black text-xl mt-2">
+                  <span className="text-white">Total</span>
+                  <span className="price-tag">₦{total.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
-            {/* Payment Notice */}
-            <div className="card p-4 mb-4 bg-yellow-50 border border-yellow-200">
-              <p className="text-sm text-yellow-800 font-semibold mb-1">
-                💰 Payment on Delivery
+            {/* Payment notice */}
+            <div className="card p-4" style={{background: 'linear-gradient(135deg, rgba(246,211,101,0.1), rgba(253,160,133,0.1))', border: '1px solid rgba(246,211,101,0.2)'}}>
+              <p className="text-sm font-bold mb-1" style={{color: '#f6d365'}}>
+                💰 Cash on Delivery
               </p>
-              <p className="text-xs text-yellow-700">
-                Pay cash when your order arrives at your doorstep.
+              <p className="text-xs text-gray-400">
+                Pay when your order arrives at your doorstep. No upfront payment needed.
               </p>
             </div>
 
             <button
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full bg-purple-700 text-white py-4 rounded-lg font-bold text-lg hover:bg-purple-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="w-full py-4 rounded-xl font-black text-white text-lg transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+              style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', boxShadow: '0 8px 30px rgba(124,58,237,0.4)'}}
             >
               {loading ? '⏳ Placing Order...' : '✅ Place Order'}
             </button>
@@ -249,13 +246,15 @@ export default function CheckoutPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-purple-900 text-purple-200 mt-16 py-8 px-4">
+      <footer style={{background: '#0d0d1a', borderTop: '1px solid rgba(124,58,237,0.2)'}} className="py-12 px-4 mt-16">
         <div className="max-w-6xl mx-auto text-center">
-          <p className="text-2xl font-bold text-white mb-2">🛒 FreshMart</p>
-          <p className="text-sm">© 2024 FreshMart. All rights reserved.</p>
+          <h2 className="text-2xl font-black mb-2" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+            ✦ FRESHMART
+          </h2>
+          <p className="text-gray-700 text-xs">© 2024 FreshMart. All rights reserved.</p>
         </div>
       </footer>
 
     </div>
   )
-}
+        }
