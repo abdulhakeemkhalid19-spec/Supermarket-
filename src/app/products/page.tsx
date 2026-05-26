@@ -1,10 +1,11 @@
 'use client'
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-export default function ProductsPage() {
+function ProductsContent() {
   const [products, setProducts] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
@@ -255,5 +256,17 @@ export default function ProductsPage() {
       </footer>
 
     </div>
+  )
+}
+
+export default function ProductsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
+        <p className="text-purple-700 text-xl">⏳ Loading products...</p>
+      </div>
+    }>
+      <ProductsContent />
+    </Suspense>
   )
 }
