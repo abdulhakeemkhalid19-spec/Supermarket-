@@ -1,10 +1,11 @@
 'use client'
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-export default function SuccessPage() {
+function SuccessContent() {
   const [order, setOrder] = useState<any>(null)
   const [orderItems, setOrderItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -191,3 +192,15 @@ export default function SuccessPage() {
     </div>
   )
 }
+
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-purple-50 flex items-center justify-center">
+        <p className="text-purple-700 text-xl">⏳ Loading...</p>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
+  )
+                }
