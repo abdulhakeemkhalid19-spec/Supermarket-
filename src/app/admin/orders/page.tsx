@@ -38,10 +38,7 @@ export default function ManageOrdersPage() {
   }
 
   const updateOrderStatus = async (orderId: string, status: string) => {
-    await supabase
-      .from('orders')
-      .update({ status })
-      .eq('id', orderId)
+    await supabase.from('orders').update({ status }).eq('id', orderId)
     fetchOrders()
     if (selectedOrder?.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status })
@@ -49,54 +46,70 @@ export default function ManageOrdersPage() {
   }
 
   const statusColors: any = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    processing: 'bg-purple-100 text-purple-800',
-    shipped: 'bg-indigo-100 text-indigo-800',
-    delivered: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800',
+    pending: { bg: 'rgba(246,211,101,0.15)', color: '#f6d365' },
+    confirmed: { bg: 'rgba(96,165,250,0.15)', color: '#60a5fa' },
+    processing: { bg: 'rgba(167,139,250,0.15)', color: '#a78bfa' },
+    shipped: { bg: 'rgba(99,102,241,0.15)', color: '#818cf8' },
+    delivered: { bg: 'rgba(52,211,153,0.15)', color: '#34d399' },
+    cancelled: { bg: 'rgba(248,113,113,0.15)', color: '#f87171' },
   }
 
   const filtered = filterStatus
     ? orders.filter((o) => o.status === filterStatus)
     : orders
 
+  const navStyle = {
+    background: 'linear-gradient(180deg, #0d0d1a 0%, rgba(13,13,26,0.95) 100%)',
+    borderBottom: '1px solid rgba(124,58,237,0.3)',
+  }
+
   return (
-    <div className="min-h-screen bg-purple-50">
+    <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
 
       {/* Navbar */}
-      <nav className="bg-purple-900 text-white sticky top-0 z-50 shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <nav style={navStyle} className="sticky top-0 z-50 shadow-2xl">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link href="/" className="text-xl font-bold">🛒 FreshMart</Link>
-            <span className="bg-purple-600 text-xs px-2 py-1 rounded-full">
-              Admin
+            <Link href="/">
+              <h1 className="text-xl font-black tracking-wider" style={{ background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                ✦ FRESHMART
+              </h1>
+            </Link>
+            <span className="text-xs px-3 py-1 rounded-full font-bold" style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa' }}>
+              ADMIN
             </span>
           </div>
-          <div className="flex items-center gap-4 text-sm">
-            <Link href="/admin" className="hover:underline">Dashboard</Link>
-            <Link href="/admin/products" className="hover:underline">Products</Link>
-            <Link href="/admin/stock" className="hover:underline">Stock</Link>
+          <div className="flex items-center gap-5 text-sm">
+            {[
+              { href: '/admin', label: 'Dashboard' },
+              { href: '/admin/products', label: 'Products' },
+              { href: '/admin/stock', label: 'Stock' },
+            ].map((link) => (
+              <Link key={link.href} href={link.href} className="text-gray-400 hover:text-white transition font-medium hidden sm:block">
+                {link.label}
+              </Link>
+            ))}
           </div>
         </div>
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-purple-800 mb-6">
-          🚚 Manage Orders
-        </h1>
+        <div className="mb-8">
+          <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-1">Management</p>
+          <h1 className="text-3xl font-black text-white">Manage Orders</h1>
+        </div>
 
-        {/* Filter by Status */}
-        <div className="card p-4 mb-6 flex gap-2 overflow-x-auto">
+        {/* Filter Tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-4 mb-6">
           {['', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
             <button
               key={status}
               onClick={() => setFilterStatus(status)}
-              className={`shrink-0 px-3 py-1 rounded-full text-sm font-semibold capitalize transition ${
-                filterStatus === status
-                  ? 'bg-purple-700 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-purple-100'
-              }`}
+              className="shrink-0 px-4 py-2 rounded-full text-xs font-bold capitalize transition hover:scale-105"
+              style={filterStatus === status
+                ? { background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', color: 'white' }
+                : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#6b7280' }
+              }
             >
               {status === '' ? 'All Orders' : status}
             </button>
@@ -108,14 +121,14 @@ export default function ManageOrdersPage() {
           {/* Orders List */}
           <div className="flex-1">
             {loading ? (
-              <div className="text-center py-20 text-purple-400">
+              <div className="text-center py-20">
                 <p className="text-5xl mb-4">⏳</p>
-                <p>Loading orders...</p>
+                <p className="text-gray-500">Loading orders...</p>
               </div>
             ) : filtered.length === 0 ? (
-              <div className="text-center py-20 text-gray-400">
+              <div className="text-center py-20">
                 <p className="text-5xl mb-4">📭</p>
-                <p className="text-lg">No orders found.</p>
+                <p className="text-gray-400 text-lg">No orders found.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -123,50 +136,47 @@ export default function ManageOrdersPage() {
                   <div
                     key={order.id}
                     onClick={() => viewOrder(order)}
-                    className={`card p-4 cursor-pointer transition ${
-                      selectedOrder?.id === order.id
-                        ? 'border-2 border-purple-500'
-                        : 'hover:border-2 hover:border-purple-200'
-                    }`}
+                    className="card p-5 cursor-pointer transition hover:scale-101"
+                    style={selectedOrder?.id === order.id
+                      ? { border: '1px solid rgba(124,58,237,0.6)', background: 'linear-gradient(145deg, #1a1a2e, #16213e)' }
+                      : {}
+                    }
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-mono text-xs text-gray-400">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="font-mono text-xs text-gray-500">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </p>
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase ${statusColors[order.status]}`}>
+                      <span className="px-3 py-1 rounded-full text-xs font-black uppercase" style={{
+                        background: statusColors[order.status]?.bg,
+                        color: statusColors[order.status]?.color,
+                      }}>
                         {order.status}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-bold text-gray-800">
-                          {order.customer_name}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          {order.customer_phone}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {new Date(order.created_at).toLocaleDateString()}
+                        <p className="font-black text-white">{order.customer_name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{order.customer_phone}</p>
+                        <p className="text-xs text-gray-600 mt-0.5">
+                          {new Date(order.created_at).toLocaleDateString('en-NG', {
+                            day: 'numeric', month: 'short', year: 'numeric'
+                          })}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-purple-700 text-lg">
+                        <p className="font-black price-tag text-lg">
                           ₦{order.total_amount.toLocaleString()}
                         </p>
                         <select
                           value={order.status}
                           onClick={(e) => e.stopPropagation()}
-                          onChange={(e) =>
-                            updateOrderStatus(order.id, e.target.value)
-                          }
-                          className="text-xs border border-gray-200 rounded-lg px-2 py-1 outline-none focus:border-purple-500 mt-1"
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          className="text-xs rounded-lg px-2 py-1 outline-none font-semibold mt-2"
+                          style={{ background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.3)', color: '#a78bfa' }}
                         >
-                          <option value="pending">Pending</option>
-                          <option value="confirmed">Confirmed</option>
-                          <option value="processing">Processing</option>
-                          <option value="shipped">Shipped</option>
-                          <option value="delivered">Delivered</option>
-                          <option value="cancelled">Cancelled</option>
+                          {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((s) => (
+                            <option key={s} value={s} style={{ background: '#1a1a2e' }}>{s}</option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -179,76 +189,66 @@ export default function ManageOrdersPage() {
           {/* Order Detail Panel */}
           {selectedOrder && (
             <div className="md:w-80 shrink-0">
-              <div className="card p-6 sticky top-20">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-purple-800">Order Details</h2>
+              <div className="card p-6 sticky top-24">
+                <div className="flex items-center justify-between mb-5">
+                  <p className="text-purple-400 text-xs font-bold tracking-widest uppercase">
+                    Order Details
+                  </p>
                   <button
                     onClick={() => setSelectedOrder(null)}
-                    className="text-gray-400 hover:text-gray-600"
+                    className="text-gray-600 hover:text-white transition text-lg"
                   >
                     ✕
                   </button>
                 </div>
-                <div className="space-y-2 text-sm mb-4">
-                  <div>
-                    <p className="text-gray-400">Order ID</p>
-                    <p className="font-mono font-bold">
-                      #{selectedOrder.id.slice(0, 8).toUpperCase()}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Customer</p>
-                    <p className="font-semibold">{selectedOrder.customer_name}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Email</p>
-                    <p className="font-semibold">{selectedOrder.customer_email}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Phone</p>
-                    <p className="font-semibold">{selectedOrder.customer_phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400">Delivery Address</p>
-                    <p className="font-semibold">{selectedOrder.delivery_address}</p>
-                  </div>
-                  {selectedOrder.notes && (
-                    <div>
-                      <p className="text-gray-400">Notes</p>
-                      <p className="font-semibold">{selectedOrder.notes}</p>
+
+                <div className="space-y-3 mb-5">
+                  {[
+                    { label: 'Order ID', value: `#${selectedOrder.id.slice(0, 8).toUpperCase()}` },
+                    { label: 'Customer', value: selectedOrder.customer_name },
+                    { label: 'Email', value: selectedOrder.customer_email },
+                    { label: 'Phone', value: selectedOrder.customer_phone },
+                    { label: 'Address', value: selectedOrder.delivery_address },
+                    { label: 'Notes', value: selectedOrder.notes || 'None' },
+                  ].map((item) => (
+                    <div key={item.label} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '8px' }}>
+                      <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
+                      <p className="text-sm font-semibold text-gray-200">{item.value}</p>
                     </div>
-                  )}
+                  ))}
                 </div>
 
-                <div className="border-t pt-4">
-                  <p className="font-bold text-purple-800 mb-3">Items Ordered</p>
+                <div style={{ borderTop: '1px solid rgba(124,58,237,0.2)' }} className="pt-4 mb-4">
+                  <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-3">
+                    Items Ordered
+                  </p>
                   <div className="space-y-2">
                     {orderItems.map((item) => (
                       <div key={item.id} className="flex justify-between text-sm">
-                        <span className="text-gray-600">
+                        <span className="text-gray-400 line-clamp-1 flex-1 mr-2">
                           {item.product_name} x{item.quantity}
                         </span>
-                        <span className="font-bold text-purple-700">
+                        <span className="font-black price-tag shrink-0">
                           ₦{(item.unit_price * item.quantity).toLocaleString()}
                         </span>
                       </div>
                     ))}
                   </div>
-                  <div className="border-t mt-3 pt-3 flex justify-between font-bold text-purple-800">
-                    <span>Total</span>
-                    <span>₦{selectedOrder.total_amount.toLocaleString()}</span>
+                  <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }} className="mt-3 pt-3 flex justify-between font-black">
+                    <span className="text-white">Total</span>
+                    <span className="price-tag">₦{selectedOrder.total_amount.toLocaleString()}</span>
                   </div>
                 </div>
 
                 {/* Jumia Fulfillment Reminder */}
-                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                  <p className="text-xs font-bold text-yellow-800 mb-1">
+                <div className="rounded-xl p-4" style={{ background: 'rgba(246,211,101,0.08)', border: '1px solid rgba(246,211,101,0.2)' }}>
+                  <p className="text-xs font-black mb-1" style={{ color: '#f6d365' }}>
                     📦 Fulfillment Reminder
                   </p>
-                  <p className="text-xs text-yellow-700">
-                    Go to Jumia and order these items to:
+                  <p className="text-xs text-gray-400 mb-2">
+                    Order these items on Jumia and deliver to:
                   </p>
-                  <p className="text-xs font-semibold text-yellow-800 mt-1">
+                  <p className="text-xs font-bold text-white">
                     {selectedOrder.delivery_address}
                   </p>
                 </div>
@@ -261,10 +261,12 @@ export default function ManageOrdersPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-purple-900 text-purple-200 mt-16 py-8 px-4">
+      <footer style={{ background: '#0d0d1a', borderTop: '1px solid rgba(124,58,237,0.2)' }} className="py-12 px-4 mt-16">
         <div className="max-w-6xl mx-auto text-center">
-          <p className="text-2xl font-bold text-white mb-2">🛒 FreshMart</p>
-          <p className="text-sm">© 2024 FreshMart. All rights reserved.</p>
+          <h2 className="text-2xl font-black mb-2" style={{ background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            ✦ FRESHMART
+          </h2>
+          <p className="text-gray-700 text-xs">© 2024 FreshMart. All rights reserved.</p>
         </div>
       </footer>
 
