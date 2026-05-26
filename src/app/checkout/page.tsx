@@ -76,12 +76,14 @@ export default function CheckoutPage() {
 
       // Update stock
       for (const item of cart) {
-        await supabase.rpc('decrement_stock', {
-          product_id: item.id,
-          quantity: item.quantity,
-        }).catch(() => {
+        try {
+          await supabase.rpc('decrement_stock', {
+            product_id: item.id,
+            quantity: item.quantity,
+          })
+        } catch {
           // Stock update is optional, won't block order
-        })
+        }
       }
 
       // Clear cart
