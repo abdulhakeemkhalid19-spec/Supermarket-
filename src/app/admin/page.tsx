@@ -123,6 +123,7 @@ export default function AdminPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
               {href: '/admin/products/add', icon: '➕', label: 'Add Product'},
+              {href: '/admin/products/bulk', icon: '📥', label: 'Bulk Import'},
               {href: '/admin/products', icon: '📋', label: 'Manage Products'},
               {href: '/admin/orders', icon: '🚚', label: 'Manage Orders'},
               {href: '/admin/stock', icon: '📦', label: 'Manage Stock'},
