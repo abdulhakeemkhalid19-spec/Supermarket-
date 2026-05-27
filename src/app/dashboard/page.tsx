@@ -29,7 +29,7 @@ export default function DashboardPage() {
     }
     setUser(user)
     fetchProfile(user.id)
-    fetchOrders(user.email)
+    fetchOrders(user.email || '')
   }
 
   const fetchProfile = async (userId: string) => {
