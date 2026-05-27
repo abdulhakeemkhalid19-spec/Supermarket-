@@ -55,7 +55,19 @@ export default function DashboardPage() {
       .select('*, order_items(*)')
       .eq('customer_email', email)
       .order('created_at', { ascending: false })
-    if (data) setOrders(data)
+    // Only show orders placed after account creation
+    if (data) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const accountCreated = new Date(user.created_at)
+        const filtered = data.filter((order) =>
+          new Date(order.created_at) >= accountCreated
+        )
+        setOrders(filtered)
+      } else {
+        setOrders(data)
+      }
+    }
   }
 
   const updateProfile = async () => {
@@ -119,6 +131,19 @@ export default function DashboardPage() {
             <Link href="/products" className="text-sm text-purple-300 hover:text-white transition hidden sm:block">
               Shop
             </Link>
+            <Link href="/cart" className="relative">
+              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
+                <span className="text-lg">🛒</span>
+              </div>
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105"
+              style={{background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171'}}
+            >
+              Sign Out
+            </button>
+          </div>
             <Link href="/cart" className="relative">
               <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
                 <span className="text-lg">🛒</span>
