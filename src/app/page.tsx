@@ -8,12 +8,28 @@ export default function Home() {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([])
   const [cartCount, setCartCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
 
   useEffect(() => {
     fetchCategories()
     fetchFeaturedProducts()
     updateCartCount()
+    getUser()
   }, [])
+
+  const getUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      setUser(user)
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      if (prof) setProfile(prof)
+    }
+  }
 
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -85,10 +101,27 @@ export default function Home() {
               <span className="absolute right-4 top-2.5 text-purple-400">🔍</span>
             </div>
           </div>
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-4">
             <Link href="/products" className="text-sm text-purple-300 hover:text-white transition hidden sm:block font-medium">
               Shop
             </Link>
+            {user ? (
+              <Link
+                href={profile?.role === 'admin' ? '/admin' : '/dashboard'}
+                className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105 hidden sm:block"
+                style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa'}}
+              >
+                {profile?.role === 'admin' ? '⚙️ Admin' : '👤 My Account'}
+              </Link>
+            ) : (
+              <Link
+                href="/auth"
+                className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105 hidden sm:block"
+                style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa'}}
+              >
+                Login
+              </Link>
+            )}
             <Link href="/cart" className="relative">
               <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
                 <span className="text-lg">🛒</span>
@@ -116,10 +149,8 @@ export default function Home() {
 
       {/* Hero Section */}
       <div className="relative overflow-hidden" style={{background: 'linear-gradient(135deg, #0d0d1a 0%, #1a0533 50%, #0d0d1a 100%)', minHeight: '85vh', display: 'flex', alignItems: 'center'}}>
-        {/* Background circles */}
         <div className="absolute top-20 left-10 w-72 h-72 rounded-full opacity-20" style={{background: 'radial-gradient(circle, #7c3aed, transparent)', filter: 'blur(60px)'}}></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full opacity-15" style={{background: 'radial-gradient(circle, #f6d365, transparent)', filter: 'blur(80px)'}}></div>
-
         <div className="max-w-6xl mx-auto px-4 py-20 text-center relative z-10 w-full">
           <div className="inline-block mb-6 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa'}}>
             ✦ Premium Online Supermarket
@@ -150,8 +181,6 @@ export default function Home() {
               View Perfumes 🌸
             </Link>
           </div>
-
-          {/* Stats */}
           <div className="flex justify-center gap-8 mt-16">
             {[
               {value: '500+', label: 'Products'},
@@ -199,7 +228,6 @@ export default function Home() {
           <p className="text-purple-400 text-sm font-bold tracking-widest uppercase mb-2">Handpicked</p>
           <h2 className="text-3xl font-black text-white">Featured Products</h2>
         </div>
-
         {featuredProducts.length === 0 ? (
           <div className="text-center py-20 text-gray-600">
             <p className="text-6xl mb-4">📦</p>
@@ -270,7 +298,7 @@ export default function Home() {
           </div>
           <Link
             href="/products"
-            className="shrink-0 px-8 py-4 rounded-full font-bold text-white transition-all hover:scale-105"
+            className="shrink-0 px-8 py-4 rounded-full font-bold transition-all hover:scale-105"
             style={{background: 'linear-gradient(135deg, #f6d365, #fda085)', color: '#1a1a2e'}}
           >
             Start Shopping →
@@ -291,7 +319,8 @@ export default function Home() {
             {[
               {href: '/products', label: 'Products'},
               {href: '/cart', label: 'Cart'},
-              {href: '/orders', label: 'Orders'},
+              {href: '/auth', label: 'Login'},
+              {href: '/dashboard', label: 'My Account'},
               {href: '/admin', label: 'Admin'},
             ].map((link) => (
               <Link key={link.href} href={link.href} className="text-gray-500 hover:text-purple-400 transition">
@@ -307,4 +336,4 @@ export default function Home() {
 
     </div>
   )
-              }
+        }
