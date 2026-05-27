@@ -3,27 +3,39 @@ import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 
 function ProductsContent() {
+  const router = useRouter()
   const [products, setProducts] = useState<any[]>([])
   const [categories, setCategories] = useState<any[]>([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [cartCount, setCartCount] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [authChecked, setAuthChecked] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
+    checkAuth()
+  }, [])
+
+  useEffect(() => {
+    if (authChecked) fetchProducts()
+  }, [selectedCategory, searchQuery, authChecked])
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/auth')
+      return
+    }
     const cat = searchParams.get('category') || ''
     setSelectedCategory(cat)
     fetchCategories()
     updateCartCount()
-  }, [])
-
-  useEffect(() => {
-    fetchProducts()
-  }, [selectedCategory, searchQuery])
+    setAuthChecked(true)
+  }
 
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -88,11 +100,9 @@ function ProductsContent() {
 
   return (
     <div className="min-h-screen" style={{background: '#0a0a0a'}}>
-
-      {/* Navbar */}
       <nav style={{background: 'linear-gradient(180deg, #0d0d1a 0%, rgba(13,13,26,0.95) 100%)', borderBottom: '1px solid rgba(124,58,237,0.3)'}} className="sticky top-0 z-50 shadow-2xl">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <Link href="/" className="shrink-0">
+          <Link href="/">
             <h1 className="text-2xl font-black tracking-wider" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
               ✦ FRESHMART
             </h1>
@@ -124,20 +134,14 @@ function ProductsContent() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 py-8 flex gap-6">
-
-        {/* Sidebar */}
         <div className="hidden sm:block w-52 shrink-0">
           <div className="card p-4 sticky top-24">
             <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">Categories</p>
             <div className="space-y-1">
               <button
                 onClick={() => setSelectedCategory('')}
-                className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  selectedCategory === ''
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-                style={selectedCategory === '' ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'} : {}}
+                className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                style={selectedCategory === '' ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', color: 'white'} : {color: '#9ca3af'}}
               >
                 🏪 All Products
               </button>
@@ -145,12 +149,8 @@ function ProductsContent() {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.slug)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                    selectedCategory === cat.slug
-                      ? 'text-white'
-                      : 'text-gray-400 hover:text-white'
-                  }`}
-                  style={selectedCategory === cat.slug ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'} : {}}
+                  className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all"
+                  style={selectedCategory === cat.slug ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', color: 'white'} : {color: '#9ca3af'}}
                 >
                   {categoryIcons[cat.slug] || '📦'} {cat.name}
                 </button>
@@ -159,27 +159,21 @@ function ProductsContent() {
           </div>
         </div>
 
-        {/* Products */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-black text-white">
-              {selectedCategory
-                ? categories.find(c => c.slug === selectedCategory)?.name || 'Products'
-                : 'All Products'}
+              {selectedCategory ? categories.find(c => c.slug === selectedCategory)?.name || 'Products' : 'All Products'}
             </h2>
             <span className="text-xs text-gray-500 px-3 py-1 rounded-full" style={{background: 'rgba(255,255,255,0.05)'}}>
               {products.length} items
             </span>
           </div>
 
-          {/* Mobile Categories */}
           <div className="sm:hidden flex gap-2 overflow-x-auto pb-4 mb-4">
             <button
               onClick={() => setSelectedCategory('')}
-              className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                selectedCategory === '' ? 'text-white' : 'text-gray-400'
-              }`}
-              style={selectedCategory === '' ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'} : {background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}
+              className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold"
+              style={selectedCategory === '' ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', color: 'white'} : {background: 'rgba(255,255,255,0.05)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.1)'}}
             >
               All
             </button>
@@ -187,10 +181,8 @@ function ProductsContent() {
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.slug)}
-                className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  selectedCategory === cat.slug ? 'text-white' : 'text-gray-400'
-                }`}
-                style={selectedCategory === cat.slug ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'} : {background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)'}}
+                className="shrink-0 px-4 py-1.5 rounded-full text-xs font-bold"
+                style={selectedCategory === cat.slug ? {background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', color: 'white'} : {background: 'rgba(255,255,255,0.05)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.1)'}}
               >
                 {categoryIcons[cat.slug]} {cat.name}
               </button>
@@ -206,13 +198,6 @@ function ProductsContent() {
             <div className="text-center py-20">
               <p className="text-5xl mb-4">📦</p>
               <p className="text-gray-400 text-lg mb-6">No products found.</p>
-              <Link
-                href="/admin"
-                className="px-6 py-3 rounded-full font-bold text-white"
-                style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'}}
-              >
-                Add Products
-              </Link>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -224,6 +209,7 @@ function ProductsContent() {
                         src={product.image_url}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        referrerPolicy="no-referrer"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
@@ -240,23 +226,17 @@ function ProductsContent() {
                     )}
                   </div>
                   <p className="text-xs text-purple-400 mb-1">{product.categories?.name}</p>
-                  <h3 className="font-semibold text-xs text-gray-200 mb-2 line-clamp-2 leading-snug">
-                    {product.name}
-                  </h3>
+                  <h3 className="font-semibold text-xs text-gray-200 mb-2 line-clamp-2">{product.name}</h3>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="price-tag text-sm font-black">
-                      ₦{product.price.toLocaleString()}
-                    </span>
+                    <span className="price-tag text-sm font-black">₦{product.price.toLocaleString()}</span>
                     {product.compare_price && (
-                      <span className="text-gray-600 text-xs line-through">
-                        ₦{product.compare_price.toLocaleString()}
-                      </span>
+                      <span className="text-gray-600 text-xs line-through">₦{product.compare_price.toLocaleString()}</span>
                     )}
                   </div>
                   <button
                     onClick={() => addToCart(product)}
                     disabled={product.stock_quantity === 0}
-                    className="w-full py-2 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="w-full py-2 rounded-xl text-xs font-bold text-white transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', boxShadow: '0 4px 15px rgba(124,58,237,0.3)'}}
                   >
                     {product.stock_quantity === 0 ? 'Out of Stock' : '+ Add to Cart'}
@@ -268,7 +248,6 @@ function ProductsContent() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer style={{background: '#0d0d1a', borderTop: '1px solid rgba(124,58,237,0.2)'}} className="py-12 px-4 mt-16">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-2xl font-black mb-2" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
@@ -277,7 +256,6 @@ function ProductsContent() {
           <p className="text-gray-700 text-xs">© 2024 FreshMart. All rights reserved.</p>
         </div>
       </footer>
-
     </div>
   )
 }
@@ -292,4 +270,4 @@ export default function ProductsPage() {
       <ProductsContent />
     </Suspense>
   )
-}
+                    }
