@@ -29,7 +29,7 @@ export default function DashboardPage() {
     }
     setUser(user)
     fetchProfile(user.id)
-    fetchOrders(user.email || '')
+    fetchOrders(user.email || '', user.created_at)
   }
 
   const fetchProfile = async (userId: string) => {
@@ -49,24 +49,18 @@ export default function DashboardPage() {
     setLoading(false)
   }
 
-  const fetchOrders = async (email: string) => {
+  const fetchOrders = async (email: string, createdAt: string) => {
     const { data } = await supabase
       .from('orders')
       .select('*, order_items(*)')
       .eq('customer_email', email)
       .order('created_at', { ascending: false })
-    // Only show orders placed after account creation
     if (data) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const accountCreated = new Date(user.created_at)
-        const filtered = data.filter((order) =>
-          new Date(order.created_at) >= accountCreated
-        )
-        setOrders(filtered)
-      } else {
-        setOrders(data)
-      }
+      const accountCreated = new Date(createdAt)
+      const filtered = data.filter(
+        (order) => new Date(order.created_at) >= accountCreated
+      )
+      setOrders(filtered)
     }
   }
 
@@ -131,19 +125,6 @@ export default function DashboardPage() {
             <Link href="/products" className="text-sm text-purple-300 hover:text-white transition hidden sm:block">
               Shop
             </Link>
-            <Link href="/cart" className="relative">
-              <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
-                <span className="text-lg">🛒</span>
-              </div>
-            </Link>
-            <button
-              onClick={handleSignOut}
-              className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105"
-              style={{background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171'}}
-            >
-              Sign Out
-            </button>
-          </div>
             <Link href="/cart" className="relative">
               <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
                 <span className="text-lg">🛒</span>
@@ -248,7 +229,9 @@ export default function DashboardPage() {
                     {order.order_items?.map((item: any) => (
                       <div key={item.id} className="flex justify-between text-sm">
                         <span className="text-gray-400">{item.product_name} x{item.quantity}</span>
-                        <span className="font-bold price-tag">₦{(item.unit_price * item.quantity).toLocaleString()}</span>
+                        <span className="font-bold price-tag">
+                          ₦{(item.unit_price * item.quantity).toLocaleString()}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -259,7 +242,9 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs text-gray-500">Total</p>
-                      <p className="font-black price-tag text-lg">₦{order.total_amount.toLocaleString()}</p>
+                      <p className="font-black price-tag text-lg">
+                        ₦{order.total_amount.toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -333,4 +318,4 @@ export default function DashboardPage() {
 
     </div>
   )
-}
+    }
