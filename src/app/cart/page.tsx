@@ -1,14 +1,28 @@
 'use client'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
 
 export default function CartPage() {
+  const router = useRouter()
   const [cart, setCart] = useState<any[]>([])
   const [cartCount, setCartCount] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadCart()
+    checkAuth()
   }, [])
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      router.push('/auth')
+      return
+    }
+    loadCart()
+    setLoading(false)
+  }
 
   const loadCart = () => {
     const saved = JSON.parse(localStorage.getItem('cart') || '[]')
@@ -40,20 +54,28 @@ export default function CartPage() {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{background: '#0a0a0a'}}>
+        <p className="text-purple-400 text-xl">⏳ Loading...</p>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen" style={{background: '#0a0a0a'}}>
 
       {/* Navbar */}
       <nav style={{background: 'linear-gradient(180deg, #0d0d1a 0%, rgba(13,13,26,0.95) 100%)', borderBottom: '1px solid rgba(124,58,237,0.3)'}} className="sticky top-0 z-50 shadow-2xl">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="shrink-0">
+          <Link href="/">
             <h1 className="text-2xl font-black tracking-wider" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
               ✦ FRESHMART
             </h1>
           </Link>
           <div className="flex items-center gap-5">
             <Link href="/products" className="text-sm text-purple-300 hover:text-white transition font-medium">
-              Shop
+              Products
             </Link>
             <div className="relative">
               <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
@@ -90,18 +112,12 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-
-            {/* Cart Items */}
             <div className="space-y-4">
               {cart.map((item) => (
                 <div key={item.id} className="card p-4 flex items-center gap-4">
                   <div className="w-20 h-20 rounded-xl overflow-hidden shrink-0" style={{background: 'rgba(124,58,237,0.15)'}}>
                     {item.image_url ? (
-                      <img
-                        src={item.image_url}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="text-3xl">📦</span>
@@ -110,45 +126,29 @@ export default function CartPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-gray-200 text-sm line-clamp-2">{item.name}</h3>
-                    <p className="price-tag font-black text-base mt-1">
-                      ₦{item.price.toLocaleString()}
-                    </p>
+                    <p className="price-tag font-black text-base mt-1">₦{item.price.toLocaleString()}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       className="w-8 h-8 rounded-full font-bold text-white flex items-center justify-center transition hover:scale-110"
                       style={{background: 'rgba(124,58,237,0.3)', border: '1px solid rgba(124,58,237,0.5)'}}
-                    >
-                      -
-                    </button>
-                    <span className="w-8 text-center font-bold text-white">
-                      {item.quantity}
-                    </span>
+                    >-</button>
+                    <span className="w-8 text-center font-bold text-white">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       className="w-8 h-8 rounded-full font-bold text-white flex items-center justify-center transition hover:scale-110"
                       style={{background: 'rgba(124,58,237,0.3)', border: '1px solid rgba(124,58,237,0.5)'}}
-                    >
-                      +
-                    </button>
+                    >+</button>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="font-black text-white">
-                      ₦{(item.price * item.quantity).toLocaleString()}
-                    </p>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="text-red-500 text-xs hover:text-red-400 mt-1 transition"
-                    >
-                      Remove
-                    </button>
+                    <p className="font-black text-white">₦{(item.price * item.quantity).toLocaleString()}</p>
+                    <button onClick={() => removeItem(item.id)} className="text-red-500 text-xs hover:text-red-400 mt-1 transition">Remove</button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Order Summary */}
             <div className="card p-6">
               <h2 className="text-lg font-black text-white mb-5">Order Summary</h2>
               <div className="space-y-3 mb-5">
@@ -172,19 +172,14 @@ export default function CartPage() {
               >
                 Proceed to Checkout →
               </Link>
-              <button
-                onClick={clearCart}
-                className="w-full mt-3 text-gray-600 text-sm hover:text-red-400 transition"
-              >
+              <button onClick={clearCart} className="w-full mt-3 text-gray-600 text-sm hover:text-red-400 transition">
                 Clear Cart
               </button>
             </div>
-
           </div>
         )}
       </div>
 
-      {/* Footer */}
       <footer style={{background: '#0d0d1a', borderTop: '1px solid rgba(124,58,237,0.2)'}} className="py-12 px-4 mt-16">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-2xl font-black mb-2" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
