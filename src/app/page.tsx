@@ -2,33 +2,39 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
+  const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([])
   const [cartCount, setCartCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchCategories()
-    fetchFeaturedProducts()
-    updateCartCount()
     getUser()
   }, [])
 
   const getUser = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      setUser(user)
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      if (prof) setProfile(prof)
+    if (!user) {
+      router.push('/auth')
+      return
     }
+    setUser(user)
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    if (prof) setProfile(prof)
+    setLoading(false)
+    fetchCategories()
+    fetchFeaturedProducts()
+    updateCartCount()
   }
 
   const updateCartCount = () => {
@@ -64,6 +70,11 @@ export default function Home() {
     alert(`${product.name} added to cart!`)
   }
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/auth')
+  }
+
   const categoryIcons: any = {
     'food-groceries': '🥦',
     'beverages': '🥤',
@@ -75,6 +86,19 @@ export default function Home() {
     'fashion-clothing': '👗',
     'health-wellness': '💊',
     'stationery-office': '📚',
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{background: '#0a0a0a'}}>
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'}}>
+            <span className="text-2xl">🛒</span>
+          </div>
+          <p className="text-purple-400 font-bold">Loading FreshMart...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -105,23 +129,20 @@ export default function Home() {
             <Link href="/products" className="text-sm text-purple-300 hover:text-white transition hidden sm:block font-medium">
               Shop
             </Link>
-            {user ? (
-              <Link
-                href={profile?.role === 'admin' ? '/admin' : '/dashboard'}
-                className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105 hidden sm:block"
-                style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa'}}
-              >
-                {profile?.role === 'admin' ? '⚙️ Admin' : '👤 My Account'}
-              </Link>
-            ) : (
-              <Link
-                href="/auth"
-                className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105 hidden sm:block"
-                style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa'}}
-              >
-                Login
-              </Link>
-            )}
+            <Link
+              href={profile?.role === 'admin' ? '/admin' : '/dashboard'}
+              className="text-xs px-4 py-2 rounded-full font-bold transition hover:scale-105 hidden sm:block"
+              style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)', color: '#a78bfa'}}
+            >
+              {profile?.role === 'admin' ? '⚙️ Admin' : '👤 Account'}
+            </Link>
+            <button
+              onClick={handleSignOut}
+              className="text-xs px-3 py-2 rounded-full font-bold transition hover:scale-105 hidden sm:block"
+              style={{background: 'rgba(248,113,113,0.15)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171'}}
+            >
+              Sign Out
+            </button>
             <Link href="/cart" className="relative">
               <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{background: 'rgba(124,58,237,0.2)', border: '1px solid rgba(124,58,237,0.4)'}}>
                 <span className="text-lg">🛒</span>
@@ -232,13 +253,15 @@ export default function Home() {
           <div className="text-center py-20 text-gray-600">
             <p className="text-6xl mb-4">📦</p>
             <p className="text-lg text-gray-400">No featured products yet.</p>
-            <Link
-              href="/admin"
-              className="mt-6 inline-block px-8 py-3 rounded-full font-bold text-white"
-              style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'}}
-            >
-              Go to Admin Panel
-            </Link>
+            {profile?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="mt-6 inline-block px-8 py-3 rounded-full font-bold text-white"
+                style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'}}
+              >
+                Go to Admin Panel
+              </Link>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
@@ -250,6 +273,8 @@ export default function Home() {
                       src={product.image_url}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                      crossOrigin="anonymous"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -319,9 +344,7 @@ export default function Home() {
             {[
               {href: '/products', label: 'Products'},
               {href: '/cart', label: 'Cart'},
-              {href: '/auth', label: 'Login'},
               {href: '/dashboard', label: 'My Account'},
-              {href: '/admin', label: 'Admin'},
             ].map((link) => (
               <Link key={link.href} href={link.href} className="text-gray-500 hover:text-purple-400 transition">
                 {link.label}
@@ -336,4 +359,4 @@ export default function Home() {
 
     </div>
   )
-        }
+            }
