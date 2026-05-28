@@ -250,11 +250,16 @@ export default function CheckoutPage() {
 
       await supabase.from('order_items').insert(orderItems)
 
-      const PaystackPop = (await import('@paystack/inline-js')).default
-      const paystack = new PaystackPop()
+      const PaystackPop = (window as any).PaystackPop
+      if (!PaystackPop) {
+        alert('Payment system loading. Please try again in a moment!')
+        setLoading(false)
+        return
+      }
 
+      const paystack = new PaystackPop()
       paystack.newTransaction({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
         email: form.customer_email,
         amount: total * 100,
         currency: 'NGN',
@@ -334,8 +339,11 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-1 space-y-4">
+
             <div className="card p-6">
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">👤 Personal Information</p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
+                👤 Personal Information
+              </p>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Full Name *</label>
@@ -353,7 +361,9 @@ export default function CheckoutPage() {
             </div>
 
             <div className="card p-6">
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">📍 Delivery Location</p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
+                📍 Delivery Location
+              </p>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">State *</label>
@@ -416,16 +426,23 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
+
           </div>
 
           <div className="md:w-80 space-y-4">
             <div className="card p-6">
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">🧾 Order Summary</p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
+                🧾 Order Summary
+              </p>
               <div className="space-y-3 mb-5">
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-gray-400 line-clamp-1 flex-1 mr-2">{item.name} x{item.quantity}</span>
-                    <span className="font-bold text-white shrink-0">₦{(item.price * item.quantity).toLocaleString()}</span>
+                    <span className="text-gray-400 line-clamp-1 flex-1 mr-2">
+                      {item.name} x{item.quantity}
+                    </span>
+                    <span className="font-bold text-white shrink-0">
+                      ₦{(item.price * item.quantity).toLocaleString()}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -443,7 +460,9 @@ export default function CheckoutPage() {
 
             <div className="card p-4" style={{background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(76,29,149,0.1))', border: '1px solid rgba(124,58,237,0.3)'}}>
               <p className="text-sm font-bold mb-1 text-purple-300">💳 Secure Payment</p>
-              <p className="text-xs text-gray-400">Pay securely with Paystack. We accept cards, bank transfer and USSD.</p>
+              <p className="text-xs text-gray-400">
+                Pay securely with Paystack. We accept cards, bank transfer and USSD.
+              </p>
             </div>
 
             <button
@@ -469,4 +488,4 @@ export default function CheckoutPage() {
 
     </div>
   )
-  }
+}
