@@ -10,10 +10,6 @@ const nigeriaLocations: any = {
     'Aba South': ['Aba', 'Ekeonunwa', 'Ezimba', 'Umuoha'],
     'Umuahia North': ['Umuahia', 'Ibeku', 'Ikwuano'],
   },
-  'Adamawa': {
-    'Yola North': ['Yola', 'Jimeta', 'Jambutu'],
-    'Yola South': ['Yola South', 'Bole', 'Demsawo'],
-  },
   'Anambra': {
     'Awka North': ['Awka', 'Amawbia', 'Mgbakwu'],
     'Onitsha North': ['Onitsha', 'Fegge', 'GRA'],
@@ -21,7 +17,6 @@ const nigeriaLocations: any = {
   },
   'Bauchi': {
     'Bauchi': ['Bauchi', 'Wunti', 'Makama'],
-    'Tafawa Balewa': ['Tafawa Balewa', 'Bununu', 'Tapshin'],
   },
   'Benue': {
     'Makurdi': ['Makurdi', 'High Level', 'North Bank'],
@@ -29,7 +24,6 @@ const nigeriaLocations: any = {
   },
   'Borno': {
     'Maiduguri': ['Maiduguri', 'Bulumkutu', 'Gomari'],
-    'Biu': ['Biu', 'Miringa', 'Mandaragirau'],
   },
   'Cross River': {
     'Calabar Municipal': ['Calabar', 'Watt Market', 'Mary Slessor'],
@@ -38,43 +32,26 @@ const nigeriaLocations: any = {
   'Delta': {
     'Warri South': ['Warri', 'Okumagba', 'Effurun'],
     'Asaba': ['Asaba', 'Cable Point', 'GRA'],
-    'Uvwie': ['Effurun', 'Ekpan', 'Ugboroke'],
-  },
-  'Ebonyi': {
-    'Abakaliki': ['Abakaliki', 'Mile 50', 'Kpirikpiri'],
-    'Onueke': ['Onueke', 'Ezza', 'Igbeagu'],
   },
   'Edo': {
     'Oredo': ['Benin City', 'Ring Road', 'Uselu'],
     'Egor': ['Uselu', 'Ugbowo', 'Ikpoba Hill'],
-    'Ikpoba Okha': ['Ikpoba Hill', 'New Benin', 'Ogida'],
   },
   'Ekiti': {
     'Ado Ekiti': ['Ado Ekiti', 'Basiri', 'Oke Ila'],
-    'Ikere': ['Ikere', 'Ara', 'Oke Ayedun'],
   },
   'Enugu': {
     'Enugu North': ['Enugu', 'Ogui', 'Abakpa'],
     'Enugu South': ['Enugu South', 'Independence Layout', 'GRA'],
-    'Igbo Eze North': ['Igbo Eze', 'Ogrute', 'Aji'],
   },
   'FCT': {
     'Abuja Municipal': ['Wuse', 'Garki', 'Maitama', 'Asokoro', 'Gwarinpa', 'Kubwa'],
     'Bwari': ['Bwari', 'Dutse', 'Byazin'],
     'Gwagwalada': ['Gwagwalada', 'Dobi', 'Paikon Kore'],
   },
-  'Gombe': {
-    'Gombe': ['Gombe', 'Pantami', 'Tudun Wada'],
-    'Kaltungo': ['Kaltungo', 'Cham', 'Shongom'],
-  },
   'Imo': {
     'Owerri Municipal': ['Owerri', 'Douglas Road', 'Ikenegbu'],
-    'Owerri North': ['Owerri North', 'Naze', 'Orji'],
     'Orlu': ['Orlu', 'Awo Omamma', 'Mgbidi'],
-  },
-  'Jigawa': {
-    'Dutse': ['Dutse', 'Takur', 'Kiyawa'],
-    'Hadejia': ['Hadejia', 'Auyo', 'Birniwa'],
   },
   'Kaduna': {
     'Kaduna North': ['Kaduna', 'Barnawa', 'Rigasa'],
@@ -88,20 +65,16 @@ const nigeriaLocations: any = {
   },
   'Katsina': {
     'Katsina': ['Katsina', 'Kofar Kaura', 'Kofar Marusa'],
-    'Daura': ['Daura', 'Sandamu', 'Zango'],
   },
   'Kebbi': {
     'Birnin Kebbi': ['Birnin Kebbi', 'Kalgo', 'Gwandu'],
-    'Argungu': ['Argungu', 'Arewa', 'Dandi'],
   },
   'Kogi': {
     'Lokoja': ['Lokoja', 'Felele', 'Ganaja'],
-    'Ankpa': ['Ankpa', 'Ogugu', 'Omala'],
   },
   'Kwara': {
     'Ilorin East': ['Ilorin', 'Tanke', 'Fate'],
     'Ilorin West': ['Ilorin West', 'Oja Oba', 'Mandate'],
-    'Offa': ['Offa', 'Lafiagi', 'Patigi'],
   },
   'Lagos': {
     'Alimosho': ['Ikotun', 'Egbeda', 'Idimu', 'Ipaja', 'Ayobo', 'Shasha'],
@@ -111,7 +84,6 @@ const nigeriaLocations: any = {
     'Oshodi-Isolo': ['Oshodi', 'Isolo', 'Ejigbo', 'Shogunle'],
     'Ojo': ['Ojo', 'Alaba', 'Ajangbadi', 'Irede'],
     'Agege': ['Agege', 'Ifako', 'Oko Oba', 'Dopemu'],
-    'Ifako-Ijaiye': ['Ifako', 'Ijaiye', 'Ogba', 'Aguda'],
     'Surulere': ['Surulere', 'Ojuelegba', 'Itire', 'Aguda'],
     'Ikeja': ['Ikeja', 'Allen', 'Oregun', 'Maryland', 'Ojodu'],
     'Eti-Osa': ['Lekki', 'Victoria Island', 'Ajah', 'Sangotedo', 'Obalende'],
@@ -131,19 +103,16 @@ const nigeriaLocations: any = {
   },
   'Ogun': {
     'Abeokuta North': ['Abeokuta', 'Lafenwa', 'Iberekodo'],
-    'Abeokuta South': ['Abeokuta South', 'Oke Ona', 'Kemta'],
     'Sagamu': ['Sagamu', 'Ogijo', 'Ilishan'],
     'Ijebu Ode': ['Ijebu Ode', 'Ago Iwoye', 'Ijebu Igbo'],
   },
   'Ondo': {
     'Akure North': ['Akure', 'Alagbaka', 'Shagari'],
-    'Akure South': ['Akure South', 'Oda Road', 'Oshinle'],
     'Ondo West': ['Ondo', 'Kajola', 'Ilara'],
   },
   'Osun': {
     'Osogbo': ['Osogbo', 'Oke Fia', 'Alekuwodo'],
     'Ile Ife': ['Ile Ife', 'Mayfair', 'Lagere'],
-    'Ilesa East': ['Ilesa', 'Garage Olode', 'Ijebu Jesa'],
   },
   'Oyo': {
     'Ibadan North': ['Bodija', 'UI', 'Agodi', 'Samonda', 'Sango'],
@@ -156,28 +125,22 @@ const nigeriaLocations: any = {
   'Plateau': {
     'Jos North': ['Jos', 'Terminus', 'Dilimi', 'Rantya'],
     'Jos South': ['Bukuru', 'Vom', 'Shen'],
-    'Mangu': ['Mangu', 'Bokkos', 'Ampang'],
   },
   'Rivers': {
     'Port Harcourt': ['Port Harcourt', 'Rumuola', 'Rumuokoro', 'Eleme', 'Diobu'],
     'Obio-Akpor': ['Rumuola', 'Rumuokoro', 'Choba', 'Rumurola'],
-    'Okrika': ['Okrika', 'Ogoloma', 'Ibaka'],
   },
   'Sokoto': {
     'Sokoto North': ['Sokoto', 'Gawon Nama', 'Kara'],
-    'Sokoto South': ['Sokoto South', 'Runjin Sambo', 'Mabera'],
   },
   'Taraba': {
     'Jalingo': ['Jalingo', 'Yelwa', 'Sarkin Dawaki'],
-    'Wukari': ['Wukari', 'Chanchanji', 'Rafin Kada'],
   },
   'Yobe': {
     'Damaturu': ['Damaturu', 'Gujba', 'Fika'],
-    'Potiskum': ['Potiskum', 'Nangere', 'Jakusko'],
   },
   'Zamfara': {
     'Gusau': ['Gusau', 'Sabon Gari', 'Tudun Wada'],
-    'Kaura Namoda': ['Kaura Namoda', 'Birnin Magaji', 'Zurmi'],
   },
 }
 
@@ -252,11 +215,8 @@ export default function CheckoutPage() {
       alert('Please fill in all required fields!')
       return
     }
-
     setLoading(true)
-
     const deliveryAddress = `${form.street_address}, ${selectedBusStop}, ${selectedLga}, ${selectedState}`
-
     try {
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -290,14 +250,13 @@ export default function CheckoutPage() {
 
       await supabase.from('order_items').insert(orderItems)
 
-      // Initialize Paystack payment
       const PaystackPop = (await import('@paystack/inline-js')).default
       const paystack = new PaystackPop()
 
       paystack.newTransaction({
         key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
         email: form.customer_email,
-        amount: total * 100, // Paystack uses kobo
+        amount: total * 100,
         currency: 'NGN',
         ref: `FRESHMART-${order.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
         metadata: {
@@ -305,7 +264,6 @@ export default function CheckoutPage() {
           customer_name: form.customer_name,
         },
         onSuccess: async (transaction: any) => {
-          // Update order payment status
           await supabase
             .from('orders')
             .update({
@@ -314,19 +272,16 @@ export default function CheckoutPage() {
               status: 'confirmed',
             })
             .eq('id', order.id)
-
           localStorage.setItem('cart', '[]')
           router.push(`/orders/success?id=${order.id}`)
         },
         onCancel: async () => {
-          // Delete order if payment cancelled
           await supabase.from('order_items').delete().eq('order_id', order.id)
           await supabase.from('orders').delete().eq('id', order.id)
           alert('Payment cancelled. Your order was not placed.')
           setLoading(false)
         },
       })
-
     } catch (error) {
       alert('Something went wrong. Please try again!')
       console.error(error)
@@ -358,8 +313,6 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen" style={{background: '#0a0a0a'}}>
-
-      {/* Navbar */}
       <nav style={{background: 'linear-gradient(180deg, #0d0d1a 0%, rgba(13,13,26,0.95) 100%)', borderBottom: '1px solid rgba(124,58,237,0.3)'}} className="sticky top-0 z-50 shadow-2xl">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/">
@@ -380,15 +333,9 @@ export default function CheckoutPage() {
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
-
-          {/* Form */}
           <div className="flex-1 space-y-4">
-
-            {/* Personal Info */}
             <div className="card p-6">
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
-                👤 Personal Information
-              </p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">👤 Personal Information</p>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Full Name *</label>
@@ -405,11 +352,8 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Delivery Location */}
             <div className="card p-6">
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
-                📍 Delivery Location
-              </p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">📍 Delivery Location</p>
               <div className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">State *</label>
@@ -463,7 +407,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Delivery Date */}
             <div className="card p-4" style={{background: 'linear-gradient(135deg, rgba(52,211,153,0.1), rgba(16,185,129,0.05))', border: '1px solid rgba(52,211,153,0.2)'}}>
               <div className="flex items-center gap-3">
                 <span className="text-2xl">📅</span>
@@ -473,24 +416,16 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
-
           </div>
 
-          {/* Summary */}
           <div className="md:w-80 space-y-4">
             <div className="card p-6">
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
-                🧾 Order Summary
-              </p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">🧾 Order Summary</p>
               <div className="space-y-3 mb-5">
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between text-sm">
-                    <span className="text-gray-400 line-clamp-1 flex-1 mr-2">
-                      {item.name} x{item.quantity}
-                    </span>
-                    <span className="font-bold text-white shrink-0">
-                      ₦{(item.price * item.quantity).toLocaleString()}
-                    </span>
+                    <span className="text-gray-400 line-clamp-1 flex-1 mr-2">{item.name} x{item.quantity}</span>
+                    <span className="font-bold text-white shrink-0">₦{(item.price * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -506,12 +441,32 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment notice */}
             <div className="card p-4" style={{background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(76,29,149,0.1))', border: '1px solid rgba(124,58,237,0.3)'}}>
-              <p className="text-sm font-bold mb-1 text-purple-300">
-                💳 Secure Payment
-              </p>
-              <p className="text-xs text-gray-400">
-                Pay securely with Paystack. We accept cards, bank transfer and USSD.
-              </p>
-            </di
+              <p className="text-sm font-bold mb-1 text-purple-300">💳 Secure Payment</p>
+              <p className="text-xs text-gray-400">Pay securely with Paystack. We accept cards, bank transfer and USSD.</p>
+            </div>
+
+            <button
+              onClick={handlePayment}
+              disabled={loading}
+              className="w-full py-4 rounded-xl font-black text-white text-lg transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
+              style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', boxShadow: '0 8px 30px rgba(124,58,237,0.4)'}}
+            >
+              {loading ? '⏳ Processing...' : `💳 Pay ₦${total.toLocaleString()}`}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <footer style={{background: '#0d0d1a', borderTop: '1px solid rgba(124,58,237,0.2)'}} className="py-12 px-4 mt-16">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-2xl font-black mb-2" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
+            ✦ FRESHMART
+          </h2>
+          <p className="text-gray-700 text-xs">© 2024 FreshMart. All rights reserved.</p>
+        </div>
+      </footer>
+
+    </div>
+  )
+  }
