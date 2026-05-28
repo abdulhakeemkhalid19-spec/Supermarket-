@@ -122,6 +122,7 @@ export default function AdminPage() {
           {/* Quick Actions */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
             {[
+              {href: '/admin/products/ai', icon: '🤖', label: 'AI Upload'},
               {href: '/admin/products/add', icon: '➕', label: 'Add Product'},
               {href: '/admin/products/bulk', icon: '📥', label: 'Bulk Import'},
               {href: '/admin/products', icon: '📋', label: 'Manage Products'},
