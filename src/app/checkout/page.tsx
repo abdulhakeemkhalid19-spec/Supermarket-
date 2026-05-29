@@ -250,41 +250,51 @@ export default function CheckoutPage() {
 
       await supabase.from('order_items').insert(orderItems)
 
-      const PaystackPop = (window as any).PaystackPop
-      if (!PaystackPop) {
+      const MonnifySDK = (window as any).MonnifySDK
+      if (!MonnifySDK) {
         alert('Payment system loading. Please try again in a moment!')
         setLoading(false)
         return
       }
 
-      const paystack = new PaystackPop()
-      paystack.newTransaction({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
-        email: form.customer_email,
-        amount: total * 100,
+      MonnifySDK.initialize({
+        amount: total,
         currency: 'NGN',
-        ref: `FRESHMART-${order.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
-        metadata: {
-          order_id: order.id,
-          customer_name: form.customer_name,
+        reference: `FRESHMART-${order.id.slice(0, 8).toUpperCase()}-${Date.now()}`,
+        customerFullName: form.customer_name,
+        customerEmail: form.customer_email,
+        customerMobileNumber: form.customer_phone,
+        apiKey: process.env.NEXT_PUBLIC_MONNIFY_API_KEY,
+        contractCode: process.env.NEXT_PUBLIC_MONNIFY_CONTRACT_CODE,
+        paymentDescription: `FreshMart Order #${order.id.slice(0, 8).toUpperCase()}`,
+        isTestMode: true,
+        paymentMethods: ['CARD', 'ACCOUNT_TRANSFER', 'USSD', 'PHONE_NUMBER'],
+        onComplete: async (response: any) => {
+          if (response.status === 'SUCCESS' || response.status === 'PAID') {
+            await supabase
+              .from('orders')
+              .update({
+                payment_status: 'paid',
+                payment_reference: response.transactionReference,
+                status: 'confirmed',
+              })
+              .eq('id', order.id)
+            localStorage.setItem('cart', '[]')
+            router.push(`/orders/success?id=${order.id}`)
+          } else {
+            await supabase.from('order_items').delete().eq('order_id', order.id)
+            await supabase.from('orders').delete().eq('id', order.id)
+            alert('Payment was not successful. Please try again!')
+            setLoading(false)
+          }
         },
-        onSuccess: async (transaction: any) => {
-          await supabase
-            .from('orders')
-            .update({
-              payment_status: 'paid',
-              payment_reference: transaction.reference,
-              status: 'confirmed',
-            })
-            .eq('id', order.id)
-          localStorage.setItem('cart', '[]')
-          router.push(`/orders/success?id=${order.id}`)
-        },
-        onCancel: async () => {
-          await supabase.from('order_items').delete().eq('order_id', order.id)
-          await supabase.from('orders').delete().eq('id', order.id)
-          alert('Payment cancelled. Your order was not placed.')
-          setLoading(false)
+        onClose: async (data: any) => {
+          if (data.status !== 'SUCCESS' && data.status !== 'PAID') {
+            await supabase.from('order_items').delete().eq('order_id', order.id)
+            await supabase.from('orders').delete().eq('id', order.id)
+            alert('Payment cancelled. Your order was not placed.')
+            setLoading(false)
+          }
         },
       })
     } catch (error) {
@@ -461,7 +471,7 @@ export default function CheckoutPage() {
             <div className="card p-4" style={{background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(76,29,149,0.1))', border: '1px solid rgba(124,58,237,0.3)'}}>
               <p className="text-sm font-bold mb-1 text-purple-300">💳 Secure Payment</p>
               <p className="text-xs text-gray-400">
-                Pay securely with Paystack. We accept cards, bank transfer and USSD.
+                Pay securely with Monnify. We accept cards, bank transfer and USSD.
               </p>
             </div>
 
@@ -488,4 +498,4 @@ export default function CheckoutPage() {
 
     </div>
   )
-}
+            }
