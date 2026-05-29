@@ -4,6 +4,21 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+// Load Monnify SDK dynamically
+const loadMonnifySDK = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if ((window as any).MonnifySDK) {
+      resolve()
+      return
+    }
+    const script = document.createElement('script')
+    script.src = 'https://sdk.monnify.com/plugin/monnify.js'
+    script.onload = () => resolve()
+    script.onerror = () => reject(new Error('Failed to load Monnify SDK'))
+    document.head.appendChild(script)
+  })
+}
+
 const nigeriaLocations: any = {
   'Abia': {
     'Aba North': ['Ariaria', 'Eziama', 'Ogbor Hill', 'Omoba', 'Osisioma'],
@@ -250,14 +265,16 @@ export default function CheckoutPage() {
 
       await supabase.from('order_items').insert(orderItems)
 
-      let MonnifySDK = (window as any).MonnifySDK
-      if (!MonnifySDK) {
-        // Wait 3 seconds for SDK to load
-        await new Promise(resolve => setTimeout(resolve, 3000))
-        MonnifySDK = (window as any).MonnifySDK
+      try {
+        await loadMonnifySDK()
+      } catch (e) {
+        alert('Payment system not available. Please check your internet and try again!')
+        setLoading(false)
+        return
       }
+      const MonnifySDK = (window as any).MonnifySDK
       if (!MonnifySDK) {
-        alert('Payment system not available. Please refresh the page and try again!')
+        alert('Payment system not available. Please refresh and try again!')
         setLoading(false)
         return
       }
