@@ -250,9 +250,14 @@ export default function CheckoutPage() {
 
       await supabase.from('order_items').insert(orderItems)
 
-      const MonnifySDK = (window as any).MonnifySDK
+      let MonnifySDK = (window as any).MonnifySDK
       if (!MonnifySDK) {
-        alert('Payment system loading. Please try again in a moment!')
+        // Wait 3 seconds for SDK to load
+        await new Promise(resolve => setTimeout(resolve, 3000))
+        MonnifySDK = (window as any).MonnifySDK
+      }
+      if (!MonnifySDK) {
+        alert('Payment system not available. Please refresh the page and try again!')
         setLoading(false)
         return
       }
