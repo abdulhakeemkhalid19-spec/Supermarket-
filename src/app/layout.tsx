@@ -14,8 +14,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script
+          src="https://sdk.monnify.com/plugin/monnify.js"
+          async={false}
+        ></script>
+      </head>
       <body style={{background: '#0a0a0a', color: '#f5f5f5', minHeight: '100vh'}}>
-        <script src="https://js.paystack.co/v1/inline.js" async></script>
         {children}
         <WhatsAppButton />
       </body>
