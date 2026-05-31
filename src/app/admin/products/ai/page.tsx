@@ -59,7 +59,7 @@ export default function AIProductPage() {
             'X-Title': 'FreshMart',
           },
           body: JSON.stringify({
-            model: 'mistralai/mistral-7b-instruct:free',
+            model: 'meta-llama/llama-3.2-3b-instruct:free',
             messages: [
               {
                 role: 'user',
