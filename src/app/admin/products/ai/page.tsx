@@ -2,16 +2,15 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import AdminGuard from '@/components/AdminGuard'
 
 export default function AIProductPage() {
-  const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
   const [productName, setProductName] = useState('')
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [generated, setGenerated] = useState(false)
+  const [apiKeyStatus, setApiKeyStatus] = useState('')
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -27,7 +26,17 @@ export default function AIProductPage() {
 
   useEffect(() => {
     fetchCategories()
+    checkApiKey()
   }, [])
+
+  const checkApiKey = () => {
+    const key = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+    if (!key || key.length < 10) {
+      setApiKeyStatus('❌ Gemini API key is missing or invalid!')
+    } else {
+      setApiKeyStatus(`✅ API key found (${key.substring(0, 8)}...)`)
+    }
+  }
 
   const fetchCategories = async () => {
     const { data } = await supabase.from('categories').select('*')
@@ -39,47 +48,64 @@ export default function AIProductPage() {
       alert('Please enter a product name!')
       return
     }
+
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+    if (!apiKey || apiKey.length < 10) {
+      alert('Gemini API key is missing! Please add it to Vercel environment variables.')
+      return
+    }
+
     setLoading(true)
     setGenerated(false)
 
     try {
-      const prompt = `You are a Nigerian supermarket product expert. Generate product details for "${productName}" to be sold on a Nigerian online supermarket website called FreshMart.
-
-Return ONLY a valid JSON object with these exact fields:
-{
-  "name": "full product name with brand and size if applicable",
-  "description": "2-3 sentence product description highlighting key features and benefits",
-  "price": number (realistic Nigerian Naira price customers would pay),
-  "compare_price": number (original price, about 10-20% higher than price to show discount),
-  "category": "one of: Food & Groceries, Beverages, Household & Cleaning, Personal Care, Perfumes & Fragrances, Baby & Kids, Electronics, Fashion & Clothing, Health & Wellness, Stationery & Office",
-  "image_url": "a direct image URL from unsplash.com or similar free image site that shows this product"
-}
-
-Make the price realistic for Nigeria in 2024. Do not include any text outside the JSON.`
-
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.NEXT_PUBLIC_GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [{
+              parts: [{
+                text: `Generate product details for "${productName}" for a Nigerian supermarket. Return ONLY a JSON object with these exact fields:
+{
+  "name": "full product name",
+  "description": "2-3 sentence description",
+  "price": price in Nigerian Naira as number,
+  "compare_price": original price 10-20 percent higher as number,
+  "category": "one of: Food & Groceries, Beverages, Household & Cleaning, Personal Care, Perfumes & Fragrances, Baby & Kids, Electronics, Fashion & Clothing, Health & Wellness, Stationery & Office",
+  "image_url": "https://images.unsplash.com/photo-relevant-image"
+}
+Return ONLY the JSON, no other text.`
+              }]
+            }],
             generationConfig: {
               temperature: 0.7,
-              maxOutputTokens: 1000,
+              maxOutputTokens: 500,
             },
           }),
         }
       )
 
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('Gemini error:', errorData)
+        throw new Error(`API error ${response.status}: ${JSON.stringify(errorData?.error?.message || '')}`)
+      }
+
       const data = await response.json()
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-      const clean = text.replace(/```json|```/g, '').trim()
-      const parsed = JSON.parse(clean)
+      console.log('AI Response:', text)
 
-      // Find matching category
+      const jsonMatch = text.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) throw new Error('No JSON in AI response')
+
+      const parsed = JSON.parse(jsonMatch[0])
+
       const matchedCategory = categories.find((cat) =>
-        cat.name.toLowerCase().includes(parsed.category?.toLowerCase().split(' ')[0] || '')
+        cat.name.toLowerCase().includes(
+          (parsed.category || '').toLowerCase().split(' ')[0]
+        )
       )
 
       setForm({
@@ -96,9 +122,9 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
       })
 
       setGenerated(true)
-    } catch (error) {
-      alert('AI generation failed. Please try again or fill manually!')
-      console.error(error)
+    } catch (error: any) {
+      console.error('AI Error:', error)
+      alert(`AI generation failed: ${error.message}`)
     }
 
     setLoading(false)
@@ -128,8 +154,7 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
       is_active: form.is_active,
     })
     if (error) {
-      alert('Error saving product!')
-      console.error(error)
+      alert('Error saving product: ' + error.message)
     } else {
       alert('✅ Product added successfully!')
       setProductName('')
@@ -211,6 +236,11 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
             <p className="text-gray-400 text-sm mt-2">Type a product name and AI will fill everything automatically!</p>
           </div>
 
+          {/* API Key Status */}
+          <div className="card p-3 mb-4">
+            <p className="text-xs text-gray-400">API Status: <span className="font-bold">{apiKeyStatus}</span></p>
+          </div>
+
           {/* AI Input */}
           <div className="card p-6 mb-6">
             <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
@@ -250,7 +280,6 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
                 <p className="text-green-400 font-bold text-sm">AI has filled in the details! Review and save.</p>
               </div>
 
-              {/* Image Preview */}
               {form.image_url && (
                 <div className="flex items-center gap-4 p-4 rounded-xl" style={{background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)'}}>
                   <img
@@ -353,7 +382,6 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
                   {saving ? '⏳ Saving...' : '➕ Save & Add Another'}
                 </button>
               </div>
-
             </div>
           )}
 
@@ -362,7 +390,7 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
             <div className="card p-6" style={{background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(76,29,149,0.05))', border: '1px solid rgba(124,58,237,0.2)'}}>
               <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">💡 Tips</p>
               <div className="space-y-2 text-sm text-gray-400">
-                <p>• Be specific: <span className="text-purple-300">"Samsung Galaxy A15 128GB"</span> works better than <span className="text-red-400">"phone"</span></p>
+                <p>• Be specific: <span className="text-purple-300">"Samsung Galaxy A15 128GB"</span></p>
                 <p>• Include brand: <span className="text-purple-300">"Nivea Men Body Wash 500ml"</span></p>
                 <p>• For food: <span className="text-purple-300">"Indomie Instant Noodles Chicken Flavor"</span></p>
                 <p>• For fashion: <span className="text-purple-300">"Nike Air Force 1 White Sneakers"</span></p>
@@ -385,4 +413,4 @@ Make the price realistic for Nigeria in 2024. Do not include any text outside th
       </div>
     </AdminGuard>
   )
-}
+                }
