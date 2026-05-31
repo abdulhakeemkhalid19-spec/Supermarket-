@@ -70,8 +70,10 @@ export default function AIProductPage() {
   "price": realistic Nigerian Naira price as number,
   "compare_price": original price 15 percent higher as number,
   "category": "one of: Food & Groceries, Beverages, Household & Cleaning, Personal Care, Perfumes & Fragrances, Baby & Kids, Electronics, Fashion & Clothing, Health & Wellness, Stationery & Office",
-  "image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"
-}`
+  "image_url": "https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=US&ASIN=PRODUCT_ASIN&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=SL250"
+}
+For the image_url, use this format with a real Amazon product image URL for ${productName}. Search for the exact product on Amazon and use its main image URL which looks like: https://m.media-amazon.com/images/I/XXXXXXXXXX._AC_SL1500_.jpg
+Only return the JSON, no other text.`
               }
             ],
             max_tokens: 500,
