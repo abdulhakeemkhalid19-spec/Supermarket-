@@ -70,11 +70,18 @@ export default function AIProductPage() {
   "price": realistic Nigerian Naira price as number,
   "compare_price": original price 15 percent higher as number,
   "category": "one of: Food & Groceries, Beverages, Household & Cleaning, Personal Care, Perfumes & Fragrances, Baby & Kids, Electronics, Fashion & Clothing, Health & Wellness, Stationery & Office",
-  "image_url": "https://ws-na.amazon-adsystem.com/widgets/q?_encoding=UTF8&MarketPlace=US&ASIN=PRODUCT_ASIN&ServiceVersion=20070822&ID=AsinImage&WS=1&Format=SL250"
+  "image_url": "https://images.unsplash.com/photo-XXXXXXXXXX?w=500&q=80"
 }
-For the image_url, use this format with a real Amazon product image URL for ${productName}. Search for the exact product on Amazon and use its main image URL which looks like: https://m.media-amazon.com/images/I/XXXXXXXXXX._AC_SL1500_.jpg
-Only return the JSON, no other text.`
-              }
+For image_url pick the most relevant Unsplash photo ID for ${productName}. Use real Unsplash photo IDs like:
+- phones/electronics: photo-1511707171634-5f897ff02aa9
+- food: photo-1567306226416-28f0efdc88ce
+- fashion/clothing: photo-1542291026-7eec264c27ff
+- perfumes: photo-1541643600914-78b084683702
+- groceries: photo-1542838132-92c53300491e
+- baby products: photo-1522771739844-6a9f6d5f14af
+- health/wellness: photo-1584308666744-24d5c474f2ae
+- cleaning products: photo-1585771724684-38269d6639fd
+Only return the JSON object, no other text.`
             ],
             max_tokens: 500,
             temperature: 0.7,
