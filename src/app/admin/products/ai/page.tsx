@@ -10,7 +10,6 @@ export default function AIProductPage() {
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [generated, setGenerated] = useState(false)
-  const [apiKeyStatus, setApiKeyStatus] = useState('')
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -26,17 +25,7 @@ export default function AIProductPage() {
 
   useEffect(() => {
     fetchCategories()
-    checkApiKey()
   }, [])
-
-  const checkApiKey = () => {
-    const key = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-    if (!key || key.length < 10) {
-      setApiKeyStatus('❌ Gemini API key is missing or invalid!')
-    } else {
-      setApiKeyStatus(`✅ API key found (${key.substring(0, 8)}...)`)
-    }
-  }
 
   const fetchCategories = async () => {
     const { data } = await supabase.from('categories').select('*')
@@ -49,9 +38,9 @@ export default function AIProductPage() {
       return
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY
-    if (!apiKey || apiKey.length < 10) {
-      alert('Gemini API key is missing! Please add it to Vercel environment variables.')
+    const apiKey = process.env.NEXT_PUBLIC_OPENROUTER_API_KEY
+    if (!apiKey) {
+      alert('OpenRouter API key is missing!')
       return
     }
 
@@ -60,45 +49,48 @@ export default function AIProductPage() {
 
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`,
+        'https://openrouter.ai/api/v1/chat/completions',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+            'HTTP-Referer': 'https://vansupermarket.vercel.app',
+            'X-Title': 'FreshMart',
+          },
           body: JSON.stringify({
-            contents: [{
-              parts: [{
-                text: `Generate product details for "${productName}" for a Nigerian supermarket. Return ONLY a JSON object with these exact fields:
+            model: 'mistralai/mistral-7b-instruct:free',
+            messages: [
+              {
+                role: 'user',
+                content: `Generate product details for "${productName}" for a Nigerian online supermarket. Return ONLY a valid JSON object with no extra text:
 {
-  "name": "full product name",
-  "description": "2-3 sentence description",
-  "price": price in Nigerian Naira as number,
-  "compare_price": original price 10-20 percent higher as number,
+  "name": "full product name with brand and size",
+  "description": "2-3 sentence product description",
+  "price": realistic Nigerian Naira price as number,
+  "compare_price": original price 15 percent higher as number,
   "category": "one of: Food & Groceries, Beverages, Household & Cleaning, Personal Care, Perfumes & Fragrances, Baby & Kids, Electronics, Fashion & Clothing, Health & Wellness, Stationery & Office",
-  "image_url": "https://images.unsplash.com/photo-relevant-image"
-}
-Return ONLY the JSON, no other text.`
-              }]
-            }],
-            generationConfig: {
-              temperature: 0.7,
-              maxOutputTokens: 500,
-            },
+  "image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"
+}`
+              }
+            ],
+            max_tokens: 500,
+            temperature: 0.7,
           }),
         }
       )
 
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('Gemini error:', errorData)
-        throw new Error(`API error ${response.status}: ${JSON.stringify(errorData?.error?.message || '')}`)
+        throw new Error(`API error ${response.status}: ${JSON.stringify(errorData)}`)
       }
 
       const data = await response.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
+      const text = data.choices?.[0]?.message?.content || ''
       console.log('AI Response:', text)
 
       const jsonMatch = text.match(/\{[\s\S]*\}/)
-      if (!jsonMatch) throw new Error('No JSON in AI response')
+      if (!jsonMatch) throw new Error('No JSON found in response')
 
       const parsed = JSON.parse(jsonMatch[0])
 
@@ -234,11 +226,6 @@ Return ONLY the JSON, no other text.`
             <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-1">AI Powered</p>
             <h1 className="text-3xl font-black text-white">AI Product Upload</h1>
             <p className="text-gray-400 text-sm mt-2">Type a product name and AI will fill everything automatically!</p>
-          </div>
-
-          {/* API Key Status */}
-          <div className="card p-3 mb-4">
-            <p className="text-xs text-gray-400">API Status: <span className="font-bold">{apiKeyStatus}</span></p>
           </div>
 
           {/* AI Input */}
@@ -413,4 +400,4 @@ Return ONLY the JSON, no other text.`
       </div>
     </AdminGuard>
   )
-                }
+                      }
