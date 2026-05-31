@@ -63,7 +63,7 @@ export default function AIProductPage() {
             messages: [
               {
                 role: 'user',
-                content: `Generate product details for "${productName}" for a Nigerian online supermarket. Return ONLY a valid JSON object with no extra text:
+                content: `Generate product details for "${productName}" for a Nigerian online supermarket. Return ONLY a valid JSON object with no extra text: {"name": "full product name with brand and size", "description": "2-3 sentence product description", "price": realistic Nigerian Naira price as number, "compare_price": original price 15 percent higher as number, "category": "one of: Food and Groceries, Beverages, Household and Cleaning, Personal Care, Perfumes and Fragrances, Baby and Kids, Electronics, Fashion and Clothing, Health and Wellness, Stationery and Office", "image_url": "pick best unsplash photo: electronics use https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500, food use https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=500, fashion use https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500, perfume use https://images.unsplash.com/photo-1541643600914-78b084683702?w=500, groceries use https://images.unsplash.com/photo-1542838132-92c53300491e?w=500"}. Only return JSON no other text.`
 {
   "name": "full product name with brand and size",
   "description": "2-3 sentence product description",
