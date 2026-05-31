@@ -59,7 +59,7 @@ export default function AIProductPage() {
             'X-Title': 'FreshMart',
           },
           body: JSON.stringify({
-            model: 'google/gemma-2-9b-it:free',
+            model: 'openrouter/auto',
             messages: [
               {
                 role: 'user',
