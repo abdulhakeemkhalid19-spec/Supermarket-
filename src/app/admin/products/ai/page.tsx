@@ -4,6 +4,30 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import AdminGuard from '@/components/AdminGuard'
 
+const UNSPLASH_IMAGES: any = {
+  electronics: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500',
+  phone: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500',
+  food: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=500',
+  fashion: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500',
+  clothing: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500',
+  perfume: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=500',
+  fragrance: 'https://images.unsplash.com/photo-1541643600914-78b084683702?w=500',
+  grocery: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500',
+  baby: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500',
+  health: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500',
+  cleaning: 'https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=500',
+  beverage: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=500',
+  default: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=500',
+}
+
+function getImageForProduct(name: string, category: string): string {
+  const combined = (name + ' ' + category).toLowerCase()
+  for (const key of Object.keys(UNSPLASH_IMAGES)) {
+    if (combined.includes(key)) return UNSPLASH_IMAGES[key]
+  }
+  return UNSPLASH_IMAGES.default
+}
+
 export default function AIProductPage() {
   const [categories, setCategories] = useState<any[]>([])
   const [productName, setProductName] = useState('')
@@ -48,42 +72,29 @@ export default function AIProductPage() {
     setGenerated(false)
 
     try {
+      const prompt = [
+        'Generate product details for a Nigerian supermarket.',
+        'Product: ' + productName,
+        'Return ONLY a JSON object with these fields:',
+        'name, description, price (Naira number), compare_price (15% higher number), category',
+        'Category must be one of: Food and Groceries, Beverages, Household and Cleaning, Personal Care, Perfumes and Fragrances, Baby and Kids, Electronics, Fashion and Clothing, Health and Wellness, Stationery and Office',
+        'Return only the JSON with no other text or explanation.',
+      ].join(' ')
+
       const response = await fetch(
         'https://openrouter.ai/api/v1/chat/completions',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': 'Bearer ' + apiKey,
             'HTTP-Referer': 'https://vansupermarket.vercel.app',
             'X-Title': 'FreshMart',
           },
           body: JSON.stringify({
             model: 'openrouter/auto',
-            messages: [
-              {
-                role: 'user',
-                content: `Generate product details for "${productName}" for a Nigerian online supermarket. Return ONLY a valid JSON object with no extra text: {"name": "full product name with brand and size", "description": "2-3 sentence product description", "price": realistic Nigerian Naira price as number, "compare_price": original price 15 percent higher as number, "category": "one of: Food and Groceries, Beverages, Household and Cleaning, Personal Care, Perfumes and Fragrances, Baby and Kids, Electronics, Fashion and Clothing, Health and Wellness, Stationery and Office", "image_url": "pick best unsplash photo: electronics use https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500, food use https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=500, fashion use https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500, perfume use https://images.unsplash.com/photo-1541643600914-78b084683702?w=500, groceries use https://images.unsplash.com/photo-1542838132-92c53300491e?w=500"}. Only return JSON no other text.`
-{
-  "name": "full product name with brand and size",
-  "description": "2-3 sentence product description",
-  "price": realistic Nigerian Naira price as number,
-  "compare_price": original price 15 percent higher as number,
-  "category": "one of: Food & Groceries, Beverages, Household & Cleaning, Personal Care, Perfumes & Fragrances, Baby & Kids, Electronics, Fashion & Clothing, Health & Wellness, Stationery & Office",
-  "image_url": "https://images.unsplash.com/photo-XXXXXXXXXX?w=500&q=80"
-}
-For image_url pick the most relevant Unsplash photo ID for ${productName}. Use real Unsplash photo IDs like:
-- phones/electronics: photo-1511707171634-5f897ff02aa9
-- food: photo-1567306226416-28f0efdc88ce
-- fashion/clothing: photo-1542291026-7eec264c27ff
-- perfumes: photo-1541643600914-78b084683702
-- groceries: photo-1542838132-92c53300491e
-- baby products: photo-1522771739844-6a9f6d5f14af
-- health/wellness: photo-1584308666744-24d5c474f2ae
-- cleaning products: photo-1585771724684-38269d6639fd
-Only return the JSON object, no other text.`
-            ],
-            max_tokens: 500,
+            messages: [{ role: 'user', content: prompt }],
+            max_tokens: 400,
             temperature: 0.7,
           }),
         }
@@ -91,7 +102,7 @@ Only return the JSON object, no other text.`
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(`API error ${response.status}: ${JSON.stringify(errorData)}`)
+        throw new Error('API error ' + response.status + ': ' + JSON.stringify(errorData))
       }
 
       const data = await response.json()
@@ -109,12 +120,14 @@ Only return the JSON object, no other text.`
         )
       )
 
+      const imageUrl = getImageForProduct(productName, parsed.category || '')
+
       setForm({
         name: parsed.name || productName,
         description: parsed.description || '',
         price: parsed.price?.toString() || '',
         compare_price: parsed.compare_price?.toString() || '',
-        image_url: parsed.image_url || '',
+        image_url: imageUrl,
         category_id: matchedCategory?.id || '',
         stock_quantity: '50',
         unit: 'piece',
@@ -125,7 +138,7 @@ Only return the JSON object, no other text.`
       setGenerated(true)
     } catch (error: any) {
       console.error('AI Error:', error)
-      alert(`AI generation failed: ${error.message}`)
+      alert('AI generation failed: ' + error.message)
     }
 
     setLoading(false)
@@ -157,7 +170,7 @@ Only return the JSON object, no other text.`
     if (error) {
       alert('Error saving product: ' + error.message)
     } else {
-      alert('✅ Product added successfully!')
+      alert('Product added successfully!')
       setProductName('')
       setForm({
         name: '',
@@ -196,8 +209,6 @@ Only return the JSON object, no other text.`
   return (
     <AdminGuard>
       <div className="min-h-screen" style={{background: '#0a0a0a'}}>
-
-        {/* Navbar */}
         <nav style={{background: 'linear-gradient(180deg, #0d0d1a 0%, rgba(13,13,26,0.95) 100%)', borderBottom: '1px solid rgba(124,58,237,0.3)'}} className="sticky top-0 z-50 shadow-2xl">
           <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -227,21 +238,17 @@ Only return the JSON object, no other text.`
         <div className="max-w-4xl mx-auto px-4 py-8">
           <div className="mb-6">
             <Link href="/admin/products" className="text-purple-400 hover:text-purple-300 text-sm transition">
-              ← Back to Products
+              Back to Products
             </Link>
           </div>
-
           <div className="mb-8">
             <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-1">AI Powered</p>
             <h1 className="text-3xl font-black text-white">AI Product Upload</h1>
             <p className="text-gray-400 text-sm mt-2">Type a product name and AI will fill everything automatically!</p>
           </div>
 
-          {/* AI Input */}
           <div className="card p-6 mb-6">
-            <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
-              🤖 Enter Product Name
-            </p>
+            <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">Enter Product Name</p>
             <div className="flex gap-3">
               <input
                 type="text"
@@ -262,32 +269,18 @@ Only return the JSON object, no other text.`
               </button>
             </div>
             {loading && (
-              <div className="mt-4 text-center">
-                <p className="text-purple-400 text-sm animate-pulse">🤖 AI is generating product details...</p>
-              </div>
+              <p className="text-purple-400 text-sm mt-4 text-center animate-pulse">AI is generating product details...</p>
             )}
           </div>
 
-          {/* Generated Form */}
           {generated && (
             <div className="card p-6 space-y-5">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-green-400 text-lg">✅</span>
-                <p className="text-green-400 font-bold text-sm">AI has filled in the details! Review and save.</p>
-              </div>
+              <p className="text-green-400 font-bold text-sm">✅ AI has filled in the details! Review and save.</p>
 
               {form.image_url && (
-                <div className="flex items-center gap-4 p-4 rounded-xl" style={{background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.2)'}}>
-                  <img
-                    src={form.image_url}
-                    alt={form.name}
-                    className="w-20 h-20 rounded-xl object-cover"
-                    onError={(e: any) => e.target.style.display = 'none'}
-                  />
-                  <div>
-                    <p className="text-xs text-gray-400 mb-1">Image Preview</p>
-                    <p className="text-xs text-gray-500 line-clamp-1">{form.image_url}</p>
-                  </div>
+                <div className="flex items-center gap-4 p-4 rounded-xl" style={{background: 'rgba(124,58,237,0.1)'}}>
+                  <img src={form.image_url} alt={form.name} className="w-20 h-20 rounded-xl object-cover" onError={(e: any) => e.target.style.display = 'none'} />
+                  <p className="text-xs text-gray-400">Image Preview</p>
                 </div>
               )}
 
@@ -295,118 +288,90 @@ Only return the JSON object, no other text.`
                 <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Product Name</label>
                 <input type="text" name="name" value={form.name} onChange={handleChange} style={inputStyle} />
               </div>
-
               <div>
                 <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Description</label>
                 <textarea name="description" value={form.description} onChange={handleChange} rows={3} style={inputStyle} />
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Selling Price (₦)</label>
+                  <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Selling Price</label>
                   <input type="number" name="price" value={form.price} onChange={handleChange} style={inputStyle} />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Original Price (₦)</label>
+                  <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Original Price</label>
                   <input type="number" name="compare_price" value={form.compare_price} onChange={handleChange} style={inputStyle} />
                 </div>
               </div>
-
               <div>
                 <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Category</label>
-                <select
-                  name="category_id"
-                  value={form.category_id}
-                  onChange={handleChange}
-                  style={{...inputStyle, background: '#1a1a2e'}}
-                >
+                <select name="category_id" value={form.category_id} onChange={handleChange} style={{...inputStyle, background: '#1a1a2e'}}>
                   <option value="">Select category</option>
                   {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id} style={{background: '#1a1a2e'}}>
-                      {cat.name}
-                    </option>
+                    <option key={cat.id} value={cat.id} style={{background: '#1a1a2e'}}>{cat.name}</option>
                   ))}
                 </select>
               </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Stock Quantity</label>
+                  <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Stock</label>
                   <input type="number" name="stock_quantity" value={form.stock_quantity} onChange={handleChange} style={inputStyle} />
                 </div>
                 <div>
                   <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Unit</label>
                   <select name="unit" value={form.unit} onChange={handleChange} style={{...inputStyle, background: '#1a1a2e'}}>
-                    {['piece', 'kg', 'litre', 'pack', 'bottle', 'carton', 'bag'].map((u) => (
+                    {['piece','kg','litre','pack','bottle','carton','bag'].map((u) => (
                       <option key={u} value={u} style={{background: '#1a1a2e'}}>{u}</option>
                     ))}
                   </select>
                 </div>
               </div>
-
               <div>
                 <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">Image URL</label>
                 <input type="text" name="image_url" value={form.image_url} onChange={handleChange} style={inputStyle} />
               </div>
-
               <div className="flex items-center gap-6">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="is_featured" checked={form.is_featured} onChange={handleChange} className="w-4 h-4 accent-purple-700" />
-                  <span className="text-sm font-semibold text-gray-400">⭐ Featured</span>
+                  <span className="text-sm text-gray-400">Featured</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" name="is_active" checked={form.is_active} onChange={handleChange} className="w-4 h-4 accent-purple-700" />
-                  <span className="text-sm font-semibold text-gray-400">✅ Active</span>
+                  <span className="text-sm text-gray-400">Active</span>
                 </label>
               </div>
-
               <div className="flex gap-3">
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex-1 py-4 rounded-xl font-black text-white transition hover:scale-105 disabled:opacity-40"
-                  style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', boxShadow: '0 8px 30px rgba(124,58,237,0.4)'}}
-                >
-                  {saving ? '⏳ Saving...' : '✅ Save Product'}
+                <button onClick={handleSave} disabled={saving} className="flex-1 py-4 rounded-xl font-black text-white transition hover:scale-105 disabled:opacity-40" style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)'}}>
+                  {saving ? 'Saving...' : 'Save Product'}
                 </button>
-                <button
-                  onClick={handleSaveAndAnother}
-                  disabled={saving}
-                  className="flex-1 py-4 rounded-xl font-black text-white transition hover:scale-105 disabled:opacity-40"
-                  style={{background: 'rgba(52,211,153,0.2)', border: '1px solid rgba(52,211,153,0.4)', color: '#34d399'}}
-                >
-                  {saving ? '⏳ Saving...' : '➕ Save & Add Another'}
+                <button onClick={handleSaveAndAnother} disabled={saving} className="flex-1 py-4 rounded-xl font-black transition hover:scale-105 disabled:opacity-40" style={{background: 'rgba(52,211,153,0.2)', border: '1px solid rgba(52,211,153,0.4)', color: '#34d399'}}>
+                  {saving ? 'Saving...' : 'Save and Add Another'}
                 </button>
               </div>
             </div>
           )}
 
-          {/* Tips */}
           {!generated && !loading && (
             <div className="card p-6" style={{background: 'linear-gradient(135deg, rgba(124,58,237,0.1), rgba(76,29,149,0.05))', border: '1px solid rgba(124,58,237,0.2)'}}>
-              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">💡 Tips</p>
+              <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">Tips</p>
               <div className="space-y-2 text-sm text-gray-400">
-                <p>• Be specific: <span className="text-purple-300">"Samsung Galaxy A15 128GB"</span></p>
-                <p>• Include brand: <span className="text-purple-300">"Nivea Men Body Wash 500ml"</span></p>
-                <p>• For food: <span className="text-purple-300">"Indomie Instant Noodles Chicken Flavor"</span></p>
-                <p>• For fashion: <span className="text-purple-300">"Nike Air Force 1 White Sneakers"</span></p>
-                <p>• Press <span className="text-purple-300">Enter</span> or click Generate after typing</p>
+                <p>Be specific: Samsung Galaxy A15 128GB</p>
+                <p>Include brand: Nivea Men Body Wash 500ml</p>
+                <p>For food: Indomie Instant Noodles Chicken Flavor</p>
+                <p>Press Enter or click Generate after typing</p>
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <footer style={{background: '#0d0d1a', borderTop: '1px solid rgba(124,58,237,0.2)'}} className="py-12 px-4 mt-16">
           <div className="max-w-6xl mx-auto text-center">
             <h2 className="text-2xl font-black mb-2" style={{background: 'linear-gradient(135deg, #a78bfa, #f6d365)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'}}>
               ✦ FRESHMART
             </h2>
-            <p className="text-gray-700 text-xs">© 2024 FreshMart. All rights reserved.</p>
+            <p className="text-gray-700 text-xs">2024 FreshMart. All rights reserved.</p>
           </div>
         </footer>
-
       </div>
     </AdminGuard>
   )
-                      }
+            }
