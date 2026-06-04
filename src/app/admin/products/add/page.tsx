@@ -9,6 +9,7 @@ export default function AddProductPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -29,6 +30,27 @@ export default function AddProductPage() {
   const fetchCategories = async () => {
     const { data } = await supabase.from('categories').select('*')
     if (data) setCategories(data)
+  }
+
+  const handleImageUpload = async (e: any) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingImage(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Date.now()}.${fileExt}`
+      const { error } = await supabase.storage
+        .from('Product')
+        .upload(fileName, file, { upsert: true })
+      if (error) throw error
+      const { data: urlData } = supabase.storage
+        .from('Product')
+        .getPublicUrl(fileName)
+      setForm((prev) => ({ ...prev, image_url: urlData.publicUrl }))
+    } catch (error: any) {
+      alert('Image upload failed: ' + error.message)
+    }
+    setUploadingImage(false)
   }
 
   const handleChange = (e: any) => {
@@ -227,10 +249,44 @@ export default function AddProductPage() {
               </div>
             </div>
 
+            {/* Image Upload */}
             <div>
               <label className="text-xs font-bold text-gray-400 block mb-2 uppercase tracking-wider">
-                Product Image URL
+                Product Image
               </label>
+              <div
+                className="w-full py-6 rounded-xl text-center mb-3 cursor-pointer transition hover:scale-105"
+                style={{background: 'rgba(124,58,237,0.1)', border: '2px dashed rgba(124,58,237,0.4)'}}
+                onClick={() => document.getElementById('image-upload')?.click()}
+              >
+                {uploadingImage ? (
+                  <p className="text-purple-400 text-sm">⏳ Uploading image...</p>
+                ) : form.image_url ? (
+                  <div>
+                    <img
+                      src={form.image_url}
+                      alt="Preview"
+                      className="h-32 rounded-xl object-cover mx-auto mb-2"
+                      onError={(e: any) => e.target.style.display = 'none'}
+                    />
+                    <p className="text-purple-300 text-xs">Tap to change image</p>
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-4xl mb-2">📸</p>
+                    <p className="text-purple-300 text-sm font-bold">Tap to upload from phone</p>
+                    <p className="text-gray-500 text-xs mt-1">JPG, PNG, WEBP supported</p>
+                  </>
+                )}
+              </div>
+              <input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageUpload}
+              />
+              <p className="text-gray-500 text-xs mb-2 text-center">— or paste image URL below —</p>
               <input
                 type="text"
                 name="image_url"
@@ -239,17 +295,6 @@ export default function AddProductPage() {
                 placeholder="https://example.com/image.jpg"
                 style={inputStyle}
               />
-              <p className="text-xs text-gray-600 mt-2">
-                💡 Tip: Right click any product image on Google → Copy image address
-              </p>
-              {form.image_url && (
-                <img
-                  src={form.image_url}
-                  alt="Preview"
-                  className="mt-3 h-32 rounded-xl object-cover"
-                  onError={(e: any) => e.target.style.display = 'none'}
-                />
-              )}
             </div>
 
             <div className="flex items-center gap-6">
@@ -261,9 +306,7 @@ export default function AddProductPage() {
                   onChange={handleChange}
                   className="w-4 h-4 accent-purple-700"
                 />
-                <span className="text-sm font-semibold text-gray-400">
-                  ⭐ Featured Product
-                </span>
+                <span className="text-sm font-semibold text-gray-400">⭐ Featured</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -273,15 +316,13 @@ export default function AddProductPage() {
                   onChange={handleChange}
                   className="w-4 h-4 accent-purple-700"
                 />
-                <span className="text-sm font-semibold text-gray-400">
-                  ✅ Active
-                </span>
+                <span className="text-sm font-semibold text-gray-400">✅ Active</span>
               </label>
             </div>
 
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || uploadingImage}
               className="w-full py-4 rounded-xl font-black text-white text-lg transition-all hover:scale-105 disabled:opacity-40 disabled:cursor-not-allowed"
               style={{background: 'linear-gradient(135deg, #7c3aed, #4c1d95)', boxShadow: '0 8px 30px rgba(124,58,237,0.4)'}}
             >
@@ -304,4 +345,4 @@ export default function AddProductPage() {
       </div>
     </AdminGuard>
   )
-}
+      }
